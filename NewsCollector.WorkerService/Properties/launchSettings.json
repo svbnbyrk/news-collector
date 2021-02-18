@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "NewsCollector.WorkerService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
