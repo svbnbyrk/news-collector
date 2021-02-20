@@ -7,6 +7,6 @@ namespace NewsCollector.DTO
 {
     public class AddKeywordDTO
     {
-        public string Keyword { get; set; }
+        public string KeywordValue { get; set; }
     }
 }

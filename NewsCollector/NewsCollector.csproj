@@ -13,10 +13,11 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NewsCollector.Core\NewsCollector.Core.csproj" />
     <ProjectReference Include="..\NewsCollector.Data\NewsCollector.Data.csproj" />
     <ProjectReference Include="..\NewsCollector.Services\NewsCollector.Services.csproj" />
   </ItemGroup>

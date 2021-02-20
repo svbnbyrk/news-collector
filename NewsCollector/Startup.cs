@@ -43,7 +43,7 @@ namespace NewsCollector
                 x => x.MigrationsAssembly("NewsCollector.Data")));
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "News Collector", Version = "v1" });
+                options.SwaggerDoc("newscollector", new OpenApiInfo { Title = "News Collector", Version = "1.0.0" });
             });
             services.AddAutoMapper(typeof(Startup));
         }
@@ -71,7 +71,7 @@ namespace NewsCollector
             app.UseSwaggerUI(c =>
             {
                 c.RoutePrefix = "";
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Music Market V1");
+                c.SwaggerEndpoint("/swagger/newscollector/swagger.json", "News Collector");
             });
         }
     }

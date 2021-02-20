@@ -21,6 +21,7 @@ namespace NewsCollector.Mapper
             CreateMap<SourceDTO, Source>();
             CreateMap<NewsDTO, News>();
             CreateMap<KeywordDTO, Keyword>();
+            CreateMap<AddKeywordDTO, Keyword>();
         }
     }
 }

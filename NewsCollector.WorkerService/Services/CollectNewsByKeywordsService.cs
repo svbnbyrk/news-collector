@@ -76,6 +76,7 @@ namespace NewsCollector.WorkerService.Services
 
                 foreach (var item in keywords)
                 {
+                    int newNews = 0;
                     //dinamik link oluşturmak için tüm keywordleri foreach ile dolaşıyorum
                     link = $"https://news.google.com/rss/search?q=%7B{item.KeywordValue}%7D&hl=tr&gl=TR&ceid=TR:tr";
 
@@ -104,7 +105,7 @@ namespace NewsCollector.WorkerService.Services
                             });
                             continue;
                         }
-
+                        newNews++;
                         var title = entry["title"].InnerText;
                         var index = title.Split("-").Reverse().FirstOrDefault().Length;
                         var cleanString = title.Remove(title.Length - index - 1, index + 1);
@@ -125,6 +126,7 @@ namespace NewsCollector.WorkerService.Services
                             News = news
                         });
                     }
+                    _logger.LogInformation("{0} anahtar kelimesi içeren {1} adet yeni haber bulundu. ", item.KeywordValue, newNews);
                 }
             }
             catch (Exception ex)
