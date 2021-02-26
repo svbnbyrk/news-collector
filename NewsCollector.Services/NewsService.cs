@@ -45,6 +45,11 @@ namespace NewsCollector.Services
             return await _unitOfWork.News.GetNewsByUrlWithNewsKeyword(url);
         }
 
+        public async Task<IEnumerable<News>> GetNewsBySourceId(int id)
+        {
+            return await _unitOfWork.News.GetNewsBySourceId(id);
+        }
+
         public async Task UpdateNews(News updatedNews, News news)
         {
             updatedNews.NewsDate = news.NewsDate;

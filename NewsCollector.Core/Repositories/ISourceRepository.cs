@@ -9,5 +9,6 @@ namespace NewsCollector.Core.Repositories
     public interface ISourceRepository : IRepository<Source>
     {
         Task<Source> GetSourceBySearchTermAsync(string searchTerm);
+
     }
 }

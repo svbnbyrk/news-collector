@@ -14,5 +14,6 @@ namespace NewsCollector.Core.Services
         Task<News> CreateNews(News news);
         Task UpdateNews(News updatedNews, News news);
         Task DeleteNews(News news);
+        Task<IEnumerable<News>> GetNewsBySourceId(int id);
     }
 }

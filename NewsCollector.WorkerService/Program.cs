@@ -6,10 +6,13 @@ using NewsCollector.Core;
 using NewsCollector.Core.Services;
 using NewsCollector.Data;
 using NewsCollector.Services;
+using NewsCollector.WorkerService.Helpers;
 using NewsCollector.WorkerService.Services;
 using System;
 using System.Configuration;
 using System.Threading.Tasks;
+using static NewsCollector.WorkerService.Helpers.CollectNewsByKeywordHelper;
+using static NewsCollector.WorkerService.Helpers.CollectNewsBySourceHelper;
 
 namespace NewsCollector.WorkerService
 {
@@ -20,25 +23,24 @@ namespace NewsCollector.WorkerService
             using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+
                     IConfigurationRoot configuration = new ConfigurationBuilder()
                       .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                       .AddJsonFile("appsettings.json")
                       .Build();
 
-                    var optionsBuilder = new DbContextOptionsBuilder<NewsCollectorDbContext>();
-                    optionsBuilder.UseNpgsql(configuration.GetConnectionString("mydb"));
-                    services.AddSingleton<NewsCollectorDbContext>(s => new NewsCollectorDbContext(optionsBuilder.Options));
+                    services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("mydb")), optionsLifetime: ServiceLifetime.Transient);
 
-                    services.AddSingleton<IUnitOfWork, UnitOfWork>();
-                    services.AddSingleton<ISourceService, SourceService>();
-                    services.AddSingleton<IKeywordService, KeywordService>();
-                    services.AddSingleton<INewsKeywordService, NewsKeywordService>();
-                    services.AddSingleton<INewsService, NewsService>();
+                    services.AddScoped<IUnitOfWork, UnitOfWork>();
+                    services.AddTransient<ISourceService, SourceService>();
+                    services.AddTransient<IKeywordService, KeywordService>();
+                    services.AddTransient<INewsKeywordService, NewsKeywordService>();
+                    services.AddTransient<INewsService, NewsService>();
 
-                    #region snippet1
-                    services.AddHostedService<CollectNewsByKeywordsService>();
-                    #endregion
+                    services.AddScoped<ICollectNewsByKeywordHelper, CollectNewsByKeywordHelper>();
+                    services.AddScoped<ICollectNewsBySourceHelper, CollectNewsBySourceHelper>();
 
+                    services.AddHostedService<TimedWorker>();
 
                 })
                 .Build();

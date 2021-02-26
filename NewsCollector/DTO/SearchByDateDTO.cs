@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace NewsCollector.DTO
 {
-    public class SourceDTO
-    {       
-        public string SourceName { get; set; }
-        public string WebAdress { get; set; }
+    public class SearchByDateDTO
+    {
+        public string StartingDate { get; set; }
+        public string EndingDate { get; set; }
     }
 }

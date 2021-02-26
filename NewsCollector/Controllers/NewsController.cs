@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NewsCollector.Core.Models;
 using NewsCollector.Core.Services;
 using NewsCollector.Data;
 using NewsCollector.DTO;
@@ -16,28 +18,48 @@ namespace NewsCollector.Controllers
     public class NewsController : ControllerBase
     {
         private readonly INewsService _newsService;
+        private readonly ISourceService _sourceService;
         private readonly IMapper _mapper;
-        private readonly NewsCollectorDbContext _dbContext;
 
-        public NewsController(INewsService newsService, IMapper mapper, NewsCollectorDbContext dbContext)
+        public NewsController(INewsService newsService, IMapper mapper, ISourceService sourceService)
         {
             this._mapper = mapper;
             this._newsService = newsService;
-            this._dbContext = dbContext;
+            this._sourceService = sourceService;
         }
 
         [HttpGet("")]
-        public ActionResult<IEnumerable<TopFiveKeywordCountDTO>> GetTopFiveKeywordCount()
+        public async Task<ActionResult<IEnumerable<NewsDTO>>> GetAll()
         {
-            var topFiveKeywordCounts = _dbContext.NewsKeywords
-                .GroupBy(x => x.Keyword.KeywordValue)
-                .Select(z => new TopFiveKeywordCountDTO
-                {
-                    KeywordName = z.Key,
-                    Count = z.Count()
-                });
+            var getallnews = await _newsService.GetAllNews();
+            if (getallnews == null)
+                return NotFound();
 
-            return Ok(topFiveKeywordCounts);
+            var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews);
+            return Ok(getallnewsDto);
+        }
+
+        [HttpGet("id")]
+        public async Task<ActionResult<NewsDTO>> Get(int id)
+        {
+            var getNews = await _newsService.GetNewsById(id);
+            if (getNews == null)
+                return NotFound();
+
+            var newsDto = _mapper.Map<News, NewsDTO>(getNews);
+            return newsDto;       
+        }
+
+        [HttpGet("{id}/Source")]
+        public async Task<ActionResult<SourceDTO>> GetSource(int id)
+        {
+            var getNews = await _newsService.GetNewsById(id);
+            var getSource = await _sourceService.GetSourceById(getNews.SourceId);
+            if (getNews == null)
+                return NotFound();
+
+            var sourceDTO = _mapper.Map<Source, SourceDTO>(getSource);
+            return sourceDTO;
         }
     }
 }

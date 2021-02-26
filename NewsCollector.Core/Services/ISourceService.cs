@@ -13,6 +13,6 @@ namespace NewsCollector.Core.Services
         Task<Source> GetSourceBySearchTermAsync(string searchTerm);        
         Task<Source> CreateSource(Source newSource);
         Task UpdateSource(Source updatedSource, Source source);
-        Task DeleteSource(Source source);
+        Task DeleteSource(Source source);       
     }
 }
