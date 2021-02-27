@@ -54,9 +54,9 @@ namespace NewsCollector.Controllers
         public async Task<ActionResult<SourceDTO>> GetSource(int id)
         {
             var getNews = await _newsService.GetNewsById(id);
-            var getSource = await _sourceService.GetSourceById(getNews.SourceId);
             if (getNews == null)
                 return NotFound();
+            var getSource = await _sourceService.GetSourceById(getNews.SourceId);
 
             var sourceDTO = _mapper.Map<Source, SourceDTO>(getSource);
             return sourceDTO;

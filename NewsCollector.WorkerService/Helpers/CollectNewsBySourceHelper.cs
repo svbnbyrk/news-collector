@@ -36,42 +36,51 @@ namespace NewsCollector.WorkerService.Helpers
 
         public async Task CollectNewsBySourceAsync()
         {
-            BaseHelper baseHelper = new BaseHelper();
-            var sources = await _sourceService.GetAllSources();
-            var link = "";
-            foreach (var source in sources)
+            try
             {
-                link = $"https://news.google.com/search?q=%20site%3A{source.WebAdress}&hl=tr&gl=TR&ceid=TR%3Atr";
-
-                var xml = baseHelper.GetRssXml(link);
-
-                //google rss de haber içerikleri item elementlerinden oluşur xml içinden item node bilgilerini diziye alıyorum
-                XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
-
-                foreach (XmlNode entry in entries)
+                BaseHelper baseHelper = new BaseHelper();
+                var sources = await _sourceService.GetAllSources();
+                var link = "";
+                foreach (var source in sources)
                 {
-                    var isExistNews = await _newsService.GetNewsByUrlWithNewsKeyword(entry["link"].InnerText);
+                    link = $"https://news.google.com/rss/search?q=%20site%3A{source.WebAdress}&hl=tr&gl=TR&ceid=TR%3Atr";
 
-                    if (isExistNews != null)
-                        continue;
+                    var xml = baseHelper.GetRssXml(link);
 
-                    var title = entry["title"].InnerText;
-                    var index = title.Split("-").Reverse().FirstOrDefault().Length;
-                    var cleanString = title.Remove(title.Length - index - 1, index + 1);
+                    //google rss de haber içerikleri item elementlerinden oluşur xml içinden item node bilgilerini diziye alıyorum
+                    XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
 
-                    var news = new News
+                    foreach (XmlNode entry in entries)
                     {
-                        NewsTitle = cleanString,
-                        NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
-                        NewsUrl = entry["link"].InnerText,
-                        //GetSource methodu ile ilgili kaynak db de mevcut değilse db ye kayıt edip News tablosuna haberle beraber yazılıyor
-                        Source = source
-                    };
+                        var isExistNews = await _newsService.GetNewsByUrlWithNewsKeyword(entry["link"].InnerText);
 
+                        if (isExistNews != null)
+                            continue;
+
+                        var title = entry["title"].InnerText;
+                        var index = title.Split("-").Reverse().FirstOrDefault().Length;
+                        var cleanString = title.Remove(title.Length - index - 1, index + 1);
+
+                        var news = new News
+                        {
+                            NewsTitle = cleanString,
+                            NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
+                            NewsUrl = entry["link"].InnerText,
+                            //GetSource methodu ile ilgili kaynak db de mevcut değilse db ye kayıt edip News tablosuna haberle beraber yazılıyor
+                            Source = source
+                        };
+
+                        await _newsService.CreateNews(news);
+                    }
                 }
+                _logger.LogInformation("CollectNewsBySourceAsync metodu çalıştı.");
             }
+            catch (Exception ex)
+            {
 
-            _logger.LogInformation("CollectNewsBySourceAsync metodu çalıştı.");
+                ex.ToString();
+            }
+            
         }
     }
 }
