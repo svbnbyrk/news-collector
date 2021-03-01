@@ -43,6 +43,7 @@ namespace NewsCollector.WorkerService
                     services.AddHostedService<TimedWorker>();
 
                 })
+                .UseSystemd()
                 .Build();
 
             await host.StartAsync();
