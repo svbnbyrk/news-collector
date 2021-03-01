@@ -67,14 +67,14 @@ namespace NewsCollector.WorkerService.Services
         /// <returns> Periyodik zamanlarda gerçekleşmesi uygun async <see cref="Task"/> değeri döndürür. </returns>
         protected async Task RunJobAsync(CancellationToken stoppingToken)
         {
-            //using (var scope = Services.CreateScope())
-            //{               
-            //    var collectNewsByKeywordHelper =
-            //        scope.ServiceProvider
-            //            .GetRequiredService<ICollectNewsByKeywordHelper>();
+            using (var scope = Services.CreateScope())
+            {
+                var collectNewsByKeywordHelper =
+                    scope.ServiceProvider
+                        .GetRequiredService<ICollectNewsByKeywordHelper>();
 
-            //    await collectNewsByKeywordHelper.CollectNewsByKeywordAsync();
-            //}
+                await collectNewsByKeywordHelper.CollectNewsByKeywordAsync();
+            }
 
             using (var scope = Services.CreateScope())
             {
