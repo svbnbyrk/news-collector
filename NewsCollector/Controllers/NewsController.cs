@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using NewsCollector.Core.Models;
 using NewsCollector.Core.Services;
 using NewsCollector.Data;
 using NewsCollector.DTO;
+using NewsCollector.Helpers;
 
 namespace NewsCollector.Controllers
 {
@@ -20,23 +22,55 @@ namespace NewsCollector.Controllers
         private readonly INewsService _newsService;
         private readonly ISourceService _sourceService;
         private readonly IMapper _mapper;
+        private readonly IKeywordService _keywordService;
 
-        public NewsController(INewsService newsService, IMapper mapper, ISourceService sourceService)
+        public NewsController(INewsService newsService, IMapper mapper, ISourceService sourceService, IKeywordService keywordService)
         {
             this._mapper = mapper;
             this._newsService = newsService;
             this._sourceService = sourceService;
+            this._keywordService = keywordService;
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<NewsDTO>>> GetAll()
+        public async Task<ActionResult<IEnumerable<NewsDTO>>> Get(string searchTerm)
         {
-            var getallnews = await _newsService.GetAllNews();
-            if (getallnews == null)
-                return NotFound();
+            var newsList = new List<NewsDTO>();
+            if (!String.IsNullOrEmpty(searchTerm))
+            {
+                BaseHelper baseHelper = new BaseHelper();
+                var link = $"https://news.google.com/rss/search?q=%7B{searchTerm}%7D&hl=tr&gl=TR&ceid=TR:tr";
 
-            var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews);
-            return Ok(getallnewsDto);
+                var xml = baseHelper.GetRssXml(link);               
+                XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
+
+                if (entries.Count == 0)
+                    return NotFound();
+
+                foreach (XmlNode entry in entries)
+                {
+                    var title = entry["title"].InnerText;
+                    var index = title.Split("-").Reverse().FirstOrDefault().Length;
+                    var cleanString = title.Remove(title.Length - index - 1, index + 1);
+                    var news = new NewsDTO
+                    {
+                        NewsTitle = cleanString,
+                        NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
+                        NewsUrl = entry["link"].InnerText
+                    };
+                    newsList.Add(news);
+                }
+                return Ok(newsList);
+            }
+            else
+            {
+                var getallnews = await _newsService.GetAllNews();
+                if (getallnews == null)
+                    return NotFound();
+
+                var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews.Take(20));
+                return Ok(getallnewsDto);
+            }           
         }
 
         [HttpGet("id")]
@@ -47,7 +81,7 @@ namespace NewsCollector.Controllers
                 return NotFound();
 
             var newsDto = _mapper.Map<News, NewsDTO>(getNews);
-            return newsDto;       
+            return newsDto;
         }
 
         [HttpGet("{id}/Source")]
@@ -56,7 +90,10 @@ namespace NewsCollector.Controllers
             var getNews = await _newsService.GetNewsById(id);
             if (getNews == null)
                 return NotFound();
+
             var getSource = await _sourceService.GetSourceById(getNews.SourceId);
+            if (getSource == null)
+                return NotFound();
 
             var sourceDTO = _mapper.Map<Source, SourceDTO>(getSource);
             return sourceDTO;

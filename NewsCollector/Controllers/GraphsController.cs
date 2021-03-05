@@ -24,14 +24,14 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("keyword-count")]
-        public ActionResult<IEnumerable<TopFiveKeywordCountDTO>> KeywordCount()
+        public ActionResult<IEnumerable<GraphDTO>> KeywordCount()
         {
             var topKeywordCounts = _dbContext.NewsKeywords
                 .GroupBy(x => x.Keyword.KeywordValue)
-                .Select(z => new TopFiveKeywordCountDTO
+                .Select(z => new GraphDTO
                 {
-                    KeywordName = z.Key,
-                    Count = z.Count()
+                    Key = z.Key,
+                    Value = z.Count()
                 }).ToList();
 
             if (topKeywordCounts == null)
@@ -41,7 +41,7 @@ namespace NewsCollector.Controllers
         }
 
         [HttpPost("keyword-count")]
-        public ActionResult<IEnumerable<TopFiveKeywordCountDTO>> KeywordCount([FromBody] SearchByDateDTO searchByDate)
+        public ActionResult<IEnumerable<GraphDTO>> KeywordCount([FromBody] SearchByDateDTO searchByDate)
         {
             DateTime startDate;
             DateTime endDate;
@@ -62,10 +62,10 @@ namespace NewsCollector.Controllers
             var topKeywordCounts = _dbContext.NewsKeywords
                 .Where(c => c.News.NewsDate >= startDate && c.News.NewsDate < endDate)
                 .GroupBy(x => x.Keyword.KeywordValue)
-                .Select(z => new TopFiveKeywordCountDTO
+                .Select(z => new GraphDTO
                 {
-                    KeywordName = z.Key,
-                    Count = z.Count()
+                    Key = z.Key,
+                    Value = z.Count()
                 }).ToList();
 
             if (topKeywordCounts == null)
@@ -75,21 +75,62 @@ namespace NewsCollector.Controllers
         }
 
 
-        [HttpGet("news-count-by-source")]
-        public ActionResult<IEnumerable<TopFiveKeywordCountDTO>> NewsCountBySource()
+        [HttpGet("news-count-by-keyword")]
+        public ActionResult<IEnumerable<GraphDTO>> NewsCountBySource()
         {
             var getNewsCountBySource = _dbContext.News
                 .GroupBy(x => new { x.SourceId })
-                .Select(c => new TopFiveKeywordCountDTO
+                .Select(c => new GraphDTO
                 {
-                    KeywordName = _dbContext.Sources.Where(x => x.Id == c.Key.SourceId).Select(x => x.SourceName).FirstOrDefault(),
-                    Count = c.Count()
+                    Key = _dbContext.Sources.Where(x => x.Id == c.Key.SourceId).Select(x => x.SourceName).FirstOrDefault(),
+                    Value = c.Count()
                 }).ToList();
 
             if (getNewsCountBySource == null)
                 return NotFound();
 
             return Ok(getNewsCountBySource);
-        }      
+        }
+
+        //[HttpGet("news-count-by-source/daily")]
+        //public ActionResult<IEnumerable<GraphDTO>> NewsCountBySource([FromBody] SearchByDateDTO searchByDate)
+        //{
+        //    DateTime startDate;
+        //    DateTime endDate;
+        //    if (!DateTime.TryParse(searchByDate.StartingDate, out startDate))
+        //    {
+        //        return BadRequest("StartDate tarih formatında değil");
+        //    }
+        //    else if (!DateTime.TryParse(searchByDate.EndingDate, out endDate))
+        //    {
+        //        return BadRequest("EndDate tarih formatında değil");
+        //    }
+
+        //    if (endDate <= startDate)
+        //    {
+        //        return BadRequest("EndDate, StartDate tarihinden ileri bir tarih olmalı");
+        //    }
+
+        //    var diffDate = (endDate - startDate).TotalDays;
+
+        //    for (int i = 0; i < (int)diffDate; i++)
+        //    {
+        //      var getNewsCountBySource = _dbContext.News
+        //        .Where(c => c.NewsDate >= startDate && c.NewsDate < endDate)
+        //        .GroupBy(x => new { x.SourceId })
+        //        .Select(c => new GraphDTO
+        //        {
+        //            Key = _dbContext.Sources.Where(x => x.Id == c.Key.SourceId).Select(x => x.SourceName).FirstOrDefault(),
+        //            Value = c.Count()
+        //        }).ToList();
+        //    }
+
+
+
+        //    if (getNewsCountBySource == null)
+        //        return NotFound();
+
+        //    return Ok(getNewsCountBySource);
+        //}
     }
 }

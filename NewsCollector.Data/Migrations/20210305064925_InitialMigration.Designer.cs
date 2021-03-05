@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NewsCollector.Data.Migrations
 {
     [DbContext(typeof(NewsCollectorDbContext))]
-    [Migration("20210212130505_ver1.0")]
-    partial class ver10
+    [Migration("20210305064925_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -43,6 +43,9 @@ namespace NewsCollector.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("Language")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("NewsDate")
                         .HasColumnType("timestamp without time zone");

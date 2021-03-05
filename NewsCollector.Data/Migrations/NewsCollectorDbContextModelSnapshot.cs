@@ -42,6 +42,9 @@ namespace NewsCollector.Data.Migrations
                         .HasColumnType("integer")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<int>("Language")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("NewsDate")
                         .HasColumnType("timestamp without time zone");
 
