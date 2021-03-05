@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace NewsCollector.Data.Migrations
 {
-    public partial class ver10 : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,6 +44,7 @@ namespace NewsCollector.Data.Migrations
                     NewsTitle = table.Column<string>(type: "text", nullable: true),
                     NewsUrl = table.Column<string>(type: "text", nullable: true),
                     NewsDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Language = table.Column<int>(type: "integer", nullable: false),
                     SourceId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>

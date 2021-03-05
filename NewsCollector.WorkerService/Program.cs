@@ -20,7 +20,7 @@ namespace NewsCollector.WorkerService
     {
         public static async Task Main(string[] args)
         {
-            using var host = Host.CreateDefaultBuilder(args)
+            using var host = Host.CreateDefaultBuilder(args)              
                 .ConfigureServices((hostContext, services) =>
                 {
 

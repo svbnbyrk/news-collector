@@ -68,7 +68,7 @@ namespace NewsCollector.WorkerService.Services
         protected async Task RunJobAsync(CancellationToken stoppingToken)
         {
             using (var scope = Services.CreateScope())
-            {
+            {               
                 var collectNewsByKeywordHelper =
                     scope.ServiceProvider
                         .GetRequiredService<ICollectNewsByKeywordHelper>();
@@ -78,7 +78,6 @@ namespace NewsCollector.WorkerService.Services
 
             using (var scope = Services.CreateScope())
             {
-
                 var collectNewsBySourceHelper =
                     scope.ServiceProvider
                         .GetRequiredService<ICollectNewsBySourceHelper>();
