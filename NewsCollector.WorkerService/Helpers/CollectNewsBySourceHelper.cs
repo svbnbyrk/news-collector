@@ -5,6 +5,7 @@ using NewsCollector.WorkerService.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -16,22 +17,20 @@ namespace NewsCollector.WorkerService.Helpers
     {
         private readonly ILogger<TimedWorker> _logger;
         private readonly ISourceService _sourceService;
-        private readonly IKeywordService _keywordService;
         private readonly INewsService _newsService;
-        private readonly INewsKeywordService _newsKeywordService;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public interface ICollectNewsBySourceHelper
         {
             Task CollectNewsBySourceAsync();
         }
 
-        public CollectNewsBySourceHelper(ILogger<TimedWorker> logger, ISourceService sourceService, IKeywordService keywordService, INewsService newsService, INewsKeywordService newsKeywordService)
+        public CollectNewsBySourceHelper(ILogger<TimedWorker> logger, ISourceService sourceService, INewsService newsService,IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _sourceService = sourceService;
-            _keywordService = keywordService;
             _newsService = newsService;
-            _newsKeywordService = newsKeywordService;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task CollectNewsBySourceAsync()
@@ -45,7 +44,11 @@ namespace NewsCollector.WorkerService.Helpers
                 int newNews = 0;
                 link = $"https://news.google.com/rss/search?q=%20site%3A{source.WebAdress}&hl=tr&gl=TR&ceid=TR%3Atr";
 
-                var xml = baseHelper.GetRssXml(link);
+                XmlDocument xml = new XmlDocument();
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri(link);
+                string result = await client.GetStringAsync("");
+                xml.LoadXml(result);
 
                 //google rss de haber içerikleri item elementlerinden oluşur xml içinden item node bilgilerini diziye alıyorum
                 XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");

@@ -34,6 +34,7 @@ namespace NewsCollector
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddHttpClient();
             services.AddTransient<ISourceService, SourceService>();
             services.AddTransient<IKeywordService, KeywordService>();
             services.AddTransient<INewsKeywordService, NewsKeywordService>();
@@ -43,7 +44,7 @@ namespace NewsCollector
                 x => x.MigrationsAssembly("NewsCollector.Data")));
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("newscollector", new OpenApiInfo { Title = "News Collector", Version = "1.0.0" });
+                options.SwaggerDoc("newscollector", new OpenApiInfo { Title = "News Collector", Version = "1.1" });
             });
             services.AddAutoMapper(typeof(Startup));
         }
