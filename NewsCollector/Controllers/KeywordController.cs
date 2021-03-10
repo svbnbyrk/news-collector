@@ -34,5 +34,33 @@ namespace NewsCollector.Controllers
 
             return Ok(artistModel);
         }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<KeywordDTO>>> GetAll()
+        {
+            var keywords = await _keywordService.GetAllKeywords();
+            if (keywords == null)
+                return NotFound();
+
+            var keywordDTO = _mapper.Map<IEnumerable<Keyword>, IEnumerable<KeywordDTO>>(keywords);
+            return Ok(keywordDTO);
+        }
+
+        // [HttpPut]
+        // public async Task<ActionResult<KeywordDTO>> UpdateKeyword(int Id, [FromBody] KeywordDTO updateKeywordResource)
+        // {
+        //     var keywordDTO = _mapper.Map<KeywordDTO, Keyword>(updateKeywordResource);
+        //     if (Id != updateKeywordResource.Id)
+        //         return BadRequest();        
+            
+        //     var keyword = await _keywordService.GetKeywordById(Id);
+
+        //     if (keyword == null)
+        //         return NotFound();
+
+        //     await _keywordService.UpdateKeyword(keywordDTO,keyword);
+
+        //     return Ok();
+        // }
     }
 }
