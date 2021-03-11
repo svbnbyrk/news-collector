@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 using AutoMapper;
@@ -23,13 +24,15 @@ namespace NewsCollector.Controllers
         private readonly ISourceService _sourceService;
         private readonly IMapper _mapper;
         private readonly IKeywordService _keywordService;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public NewsController(INewsService newsService, IMapper mapper, ISourceService sourceService, IKeywordService keywordService)
+        public NewsController(INewsService newsService, IMapper mapper, ISourceService sourceService, IKeywordService keywordService, IHttpClientFactory httpClientFactory)
         {
             this._mapper = mapper;
             this._newsService = newsService;
             this._sourceService = sourceService;
             this._keywordService = keywordService;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet("")]
@@ -38,10 +41,13 @@ namespace NewsCollector.Controllers
             var newsList = new List<NewsDTO>();
             if (!String.IsNullOrEmpty(searchTerm))
             {
-                BaseHelper baseHelper = new BaseHelper();
                 var link = $"https://news.google.com/rss/search?q=%7B{searchTerm}%7D&hl=tr&gl=TR&ceid=TR:tr";
 
-                var xml = baseHelper.GetRssXml(link);               
+                XmlDocument xml = new XmlDocument();
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri(link);
+                string result = await client.GetStringAsync("");
+                xml.LoadXml(result);
                 XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
 
                 if (entries.Count == 0)
@@ -70,7 +76,7 @@ namespace NewsCollector.Controllers
 
                 var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews.Take(20));
                 return Ok(getallnewsDto);
-            }           
+            }
         }
 
         [HttpGet("id")]

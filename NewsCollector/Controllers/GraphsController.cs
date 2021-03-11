@@ -75,7 +75,7 @@ namespace NewsCollector.Controllers
         }
 
 
-        [HttpGet("news-count-by-keyword")]
+        [HttpGet("news-count-by-source")]
         public ActionResult<IEnumerable<GraphDTO>> NewsCountBySource()
         {
             var getNewsCountBySource = _dbContext.News

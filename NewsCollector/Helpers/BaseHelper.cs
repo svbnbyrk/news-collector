@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -10,6 +11,11 @@ namespace NewsCollector.Helpers
 {
     public class BaseHelper
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+        public BaseHelper(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
         public string GetNewsContent(string html)
         {
             var newsContent = "";
@@ -59,16 +65,6 @@ namespace NewsCollector.Helpers
             {
                 return str;
             }
-        }
-
-        public XmlDocument GetRssXml(string link)
-        {
-            XmlDocument xml = new XmlDocument();
-            Uri url = new Uri(link);
-            WebClient client = new WebClient();
-            string html = client.DownloadString(url);
-            xml.LoadXml(html);
-            return xml;
         }
 
         public string ClearHtmlTags(string node)
