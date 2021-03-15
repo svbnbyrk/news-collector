@@ -12,6 +12,7 @@ namespace NewsCollector.Core
         IKeywordRepository Keywords { get; }
         INewsKeywordRepository NewsKeywords { get; }
         INewsRepository News { get; }
+        IUserRepository Users{get;}
 
         Task<int> CommitAsync();
 

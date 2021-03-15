@@ -24,6 +24,13 @@ namespace NewsCollector.Data.Configurations
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
+            builder.HasGeneratedTsVectorColumn(
+                p => p.SearchVector,
+                "turkish",
+                p => new {p.NewsTitle, p.NewsContent})
+                .HasIndex(p => p.SearchVector)
+                .HasMethod("GIN");
+
             builder
                 .ToTable("News");
 

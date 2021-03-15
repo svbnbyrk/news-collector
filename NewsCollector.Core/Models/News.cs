@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +18,8 @@ namespace NewsCollector.Core.Models
         public Languages Language { get; set; }
         public Source Source { get; set; }
         public int SourceId { get; set; }
+        public string NewsContent { get; set; }             
+        public NpgsqlTsVector SearchVector { get; set; }
         public virtual ICollection<NewsKeyword> NewsKeywords { get; set; }
     }
 }

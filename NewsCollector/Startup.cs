@@ -4,20 +4,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NewsCollector.Core;
 using NewsCollector.Core.Services;
 using NewsCollector.Data;
+using NewsCollector.Helpers;
 using NewsCollector.Services;
 using Npgsql.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Swagger;
+using static NewsCollector.Helpers.JwtMiddleware;
 
 namespace NewsCollector
 {
@@ -33,14 +37,17 @@ namespace NewsCollector
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
             services.AddHttpClient();
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+            services.AddTransient<IUserService, UserService>();
             services.AddTransient<ISourceService, SourceService>();
             services.AddTransient<IKeywordService, KeywordService>();
             services.AddTransient<INewsKeywordService, NewsKeywordService>();
             services.AddTransient<INewsService, NewsService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), 
+            services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("NewsCollector.Data")));
             services.AddSwaggerGen(options =>
             {
@@ -68,7 +75,13 @@ namespace NewsCollector
                 endpoints.MapControllers();
             });
 
-            app.UseSwagger(); 
+            app.UseCors(x => x
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
+
+            app.UseMiddleware<JwtMiddleware>();
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.RoutePrefix = "";
