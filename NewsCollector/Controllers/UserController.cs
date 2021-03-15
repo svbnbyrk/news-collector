@@ -39,6 +39,7 @@ namespace NewsCollector.Controllers
 
             return Ok(response);
         }
+        
         [NonAction]
         private string generateJwtToken(User user)
         {
