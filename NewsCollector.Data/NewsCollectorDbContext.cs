@@ -13,6 +13,7 @@ namespace NewsCollector.Data
         public DbSet<Source> Sources { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<NewsKeyword> NewsKeywords { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public NewsCollectorDbContext(DbContextOptions<NewsCollectorDbContext> options) : base(options)
         {

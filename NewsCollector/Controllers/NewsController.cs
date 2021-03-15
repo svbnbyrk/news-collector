@@ -79,6 +79,7 @@ namespace NewsCollector.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("id")]
         public async Task<ActionResult<NewsDTO>> Get(int id)
         {

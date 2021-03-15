@@ -15,6 +15,7 @@ namespace NewsCollector.Data
         private NewsRepository _newsRepository;
         private NewsKeywordRepository _newsKeywordRepository;
         private KeywordRepository _keywordRepository;
+        private UserRepository _userRepository;
 
         public UnitOfWork(NewsCollectorDbContext context)
         {
@@ -28,6 +29,8 @@ namespace NewsCollector.Data
         public INewsKeywordRepository NewsKeywords => _newsKeywordRepository ?? new NewsKeywordRepository(_context);
 
         public INewsRepository News => _newsRepository ?? new NewsRepository(_context);
+
+        public IUserRepository Users => _userRepository ?? new UserRepository(_context);
 
         public async Task<int> CommitAsync()
         {
