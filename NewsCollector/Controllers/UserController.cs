@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NewsCollector.Helpers;
+using AutoMapper;
 
 namespace NewsCollector.Controllers
 {
@@ -19,26 +20,52 @@ namespace NewsCollector.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
         private readonly AppSettings _appSettings;
+        private readonly IMapper mapper;
 
-        public UserController(IUserService userService, IOptions<AppSettings> appSettings)
+        public UserController(IUserService userService, IOptions<AppSettings> appSettings, IMapper mapper)
         {
             _userService = userService;
             _appSettings = appSettings.Value;
+            this.mapper = mapper;
         }
 
         [HttpPost("authenticate")]
-        public IActionResult Authenticate(AuthenticateRequest model)
+        public async Task<ActionResult> Authenticate(AuthenticateRequest model)
         {
 
-            var response = AuthenticateAsync(model);
+            var response = await AuthenticateAsync(model);
 
             if (response == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
             return Ok(response);
         }
+
+        [HttpPost("")]
+        public async Task<ActionResult<AddUserDTO>> CreateUser([FromBody] AddUserDTO addUserResources)
+        {
+            User userModel = mapper.Map<AddUserDTO, User>(addUserResources);
+            var newUser = await _userService.CreateUser(userModel);
+            if(newUser == null)
+                return NotFound();
+            var user = await _userService.GetUserById(newUser.Id);
+            var userModelDTO = mapper.Map<User, AddUserDTO>(user);
+            return Ok(userModelDTO);
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult> DeleteUser(int id)
+        {
+            var user = await _userService.GetUserById(id);
+            if(user == null)
+                return NotFound();
+                
+            await _userService.DeleteUser(user);
+            return Ok();
+        }
+        
         [NonAction]
         private string generateJwtToken(User user)
         {
@@ -60,7 +87,8 @@ namespace NewsCollector.Controllers
             var user = await _userService.GetUserByUsernamePassword(model.Username, model.Password);
 
             // return null if user not found
-            if (user == null) return null;
+            if (user == null) 
+                return null;
 
             // authentication successful so generate jwt token
             var token = generateJwtToken(user);

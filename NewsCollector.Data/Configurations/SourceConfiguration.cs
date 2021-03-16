@@ -19,9 +19,6 @@ namespace NewsCollector.Data.Configurations
                 .UseIdentityColumn();
 
             builder
-                .Property(m => m.WebAdress);
-
-            builder
                 .Property(m => m.SourceName)
                 .HasMaxLength(150);
 
