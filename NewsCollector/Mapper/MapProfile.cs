@@ -15,7 +15,7 @@ namespace NewsCollector.Mapper
             CreateMap<Source, SourceDTO>();
             CreateMap<News, NewsDTO>();
             CreateMap<Keyword, KeywordDTO>();
-
+            CreateMap<User, AddUserDTO>();
 
             // Resource to Domain
             CreateMap<SourceDTO, Source>();
@@ -23,6 +23,7 @@ namespace NewsCollector.Mapper
             CreateMap<KeywordDTO, Keyword>();
             CreateMap<AddKeywordDTO, Keyword>();
             CreateMap<AddSourceDTO, Source>();
+            CreateMap<AddUserDTO, User>();
         }
     }
 }

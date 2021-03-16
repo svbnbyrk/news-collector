@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -78,6 +79,24 @@ namespace NewsCollector
                     }
                 });
             });
+            // services.AddAuthentication(option =>
+            // {
+            //     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //     option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            // }).AddJwtBearer(options =>
+            // {
+            //     options.TokenValidationParameters = new TokenValidationParameters
+            //     {
+            //         ValidateIssuer = true,
+            //         ValidateAudience = true,
+            //         ValidateLifetime = false,
+            //         ValidateIssuerSigningKey = true,
+            //         ValidIssuer = Configuration["JwtToken:Issuer"],
+            //         ValidAudience = Configuration["JwtToken:Issuer"],
+            //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtToken:SecretKey"])) //Configuration["JwtToken:SecretKey"]
+            //     };
+            // });
             services.AddAutoMapper(typeof(Startup));
         }
 
@@ -93,7 +112,7 @@ namespace NewsCollector
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseMiddleware<JwtMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
@@ -105,13 +124,20 @@ namespace NewsCollector
              .AllowAnyMethod()
              .AllowAnyHeader());
 
-            app.UseMiddleware<JwtMiddleware>();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.RoutePrefix = "";
                 c.SwaggerEndpoint("/swagger/newscollector/swagger.json", "News Collector");
             });
+
+            app.UseExceptionHandler(a => a.Run(async context =>
+            {
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionHandlerPathFeature.Error;
+
+                await context.Response.WriteAsJsonAsync(new { error = exception.Message });
+            }));
         }
     }
 }

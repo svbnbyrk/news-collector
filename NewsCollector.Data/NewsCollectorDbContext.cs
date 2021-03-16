@@ -32,7 +32,7 @@ namespace NewsCollector.Data
             builder.ApplyConfiguration(new KeywordConfiguration());
             builder.ApplyConfiguration(new NewsKeywordConfiguration());
             builder.ApplyConfiguration(new SourceConfiguration());
-
+            builder.ApplyConfiguration(new UserConfiguration());
         }       
     }
 }
