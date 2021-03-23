@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,9 +39,15 @@ namespace NewsCollector
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
-            services.AddControllers();
+
+                services.AddControllers(options =>
+    {
+        // requires using Microsoft.AspNetCore.Mvc.Formatters;
+        options.OutputFormatters.RemoveType<StringOutputFormatter>();
+        options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
+    });
             services.AddHttpClient();
+            services.AddCors();
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ISourceService, SourceService>();
@@ -79,24 +86,6 @@ namespace NewsCollector
                     }
                 });
             });
-            // services.AddAuthentication(option =>
-            // {
-            //     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //     option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            // }).AddJwtBearer(options =>
-            // {
-            //     options.TokenValidationParameters = new TokenValidationParameters
-            //     {
-            //         ValidateIssuer = true,
-            //         ValidateAudience = true,
-            //         ValidateLifetime = false,
-            //         ValidateIssuerSigningKey = true,
-            //         ValidIssuer = Configuration["JwtToken:Issuer"],
-            //         ValidAudience = Configuration["JwtToken:Issuer"],
-            //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtToken:SecretKey"])) //Configuration["JwtToken:SecretKey"]
-            //     };
-            // });
             services.AddAutoMapper(typeof(Startup));
         }
 
@@ -111,6 +100,11 @@ namespace NewsCollector
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            
+            app.UseCors(x => x
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
 
             app.UseMiddleware<JwtMiddleware>();
 
@@ -119,10 +113,6 @@ namespace NewsCollector
                 endpoints.MapControllers();
             });
 
-            app.UseCors(x => x
-             .AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowAnyHeader());
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

@@ -59,5 +59,10 @@ namespace NewsCollector.Services
 
             await _unitOfWork.CommitAsync();
         }
+
+        public async Task<IEnumerable<News>> GetNewsByKeywordId(int keywordId)
+        {
+            return await _unitOfWork.News.GetNewsByKeywordId(keywordId);
+        }
     }
 }

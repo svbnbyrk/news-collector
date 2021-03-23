@@ -17,11 +17,13 @@ namespace NewsCollector.Controllers
     {
         private readonly IKeywordService _keywordService;
         private readonly IMapper _mapper;
+        private readonly INewsService newsService;
 
-        public KeywordController(IKeywordService keywordService, IMapper mapper)
+        public KeywordController(IKeywordService keywordService, IMapper mapper, INewsService newsService)
         {
             _mapper = mapper;
             _keywordService = keywordService;
+            this.newsService = newsService;
         }
 
         [HttpPost("")]
@@ -44,6 +46,17 @@ namespace NewsCollector.Controllers
 
             var keywordDTO = _mapper.Map<IEnumerable<Keyword>, IEnumerable<KeywordDTO>>(keywords);
             return Ok(keywordDTO);
+        }
+
+        [HttpGet("{id}/News")]
+        public async Task<ActionResult<IEnumerable<NewsDTO>>> GetNewsByKeyword(int id)
+        {
+            var news = await newsService.GetNewsByKeywordId(id);
+            if(news == null)
+                return NotFound();
+
+            var newsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(news);
+            return Ok(newsDto);           
         }
 
         // [HttpPut]

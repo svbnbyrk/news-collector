@@ -15,7 +15,7 @@ namespace NewsCollector.WorkerService.Helpers
 {
     public class CollectNewsBySourceHelper : ICollectNewsBySourceHelper
     {
-        private readonly ILogger<TimedWorker> _logger;
+        private readonly ILogger<CollectNewsBySourceHelper> _logger;
         private readonly ISourceService _sourceService;
         private readonly INewsService _newsService;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -25,7 +25,7 @@ namespace NewsCollector.WorkerService.Helpers
             Task CollectNewsBySourceAsync();
         }
 
-        public CollectNewsBySourceHelper(ILogger<TimedWorker> logger, ISourceService sourceService, INewsService newsService,IHttpClientFactory httpClientFactory)
+        public CollectNewsBySourceHelper(ILogger<CollectNewsBySourceHelper> logger, ISourceService sourceService, INewsService newsService, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _sourceService = sourceService;
@@ -35,7 +35,6 @@ namespace NewsCollector.WorkerService.Helpers
 
         public async Task CollectNewsBySourceAsync()
         {
-            BaseHelper baseHelper = new BaseHelper();
             var sources = await _sourceService.GetAllSources();
             _logger.LogInformation("{0} Adet haber kaynağı bulundu", sources.Count());
             var link = "";
@@ -55,29 +54,37 @@ namespace NewsCollector.WorkerService.Helpers
 
                 foreach (XmlNode entry in entries)
                 {
-                    var isExistNews = await _newsService.GetNewsByUrlWithNewsKeyword(entry["link"].InnerText);
-
-                    if (isExistNews != null)
-                        continue;
-
-                    newNews++;
-                    var title = entry["title"].InnerText;
-                    var index = title.Split("-").Reverse().FirstOrDefault().Length;
-                    var cleanString = title.Remove(title.Length - index - 1, index + 1);
-
-                    var news = new News
+                    try
                     {
-                        NewsTitle = cleanString,
-                        NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
-                        NewsUrl = entry["link"].InnerText,                      
-                        Source = source
-                    };
+                        var isExistNews = await _newsService.GetNewsByUrlWithNewsKeyword(entry["link"].InnerText);
 
-                    await _newsService.CreateNews(news);
+                        if (isExistNews != null)
+                            continue;
+
+                        newNews++;
+                        var title = entry["title"].InnerText;
+                        var index = title.Split("-").Reverse().FirstOrDefault().Length;
+                        var cleanString = title.Remove(title.Length - index - 1, index + 1);
+
+                        var news = new News
+                        {
+                            NewsTitle = cleanString,
+                            NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
+                            NewsUrl = entry["link"].InnerText,
+                            Source = source
+                        };
+
+                        await _newsService.CreateNews(news);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        continue;
+                    }
                 }
-                _logger.LogInformation("{0} Haber kaynağına ait {1} adet yeni haber bulundu.",source.SourceName, newNews);
+                _logger.LogInformation("{0} Haber kaynağına ait {1} adet yeni haber bulundu.", source.SourceName, newNews);
             }
-            _logger.LogInformation("CollectNewsBySourceAsync metodu çalıştı.");
         }
     }
 }
+

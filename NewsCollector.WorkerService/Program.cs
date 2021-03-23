@@ -8,6 +8,7 @@ using NewsCollector.Data;
 using NewsCollector.Services;
 using NewsCollector.WorkerService.Helpers;
 using NewsCollector.WorkerService.Services;
+using Serilog;
 using System;
 using System.Configuration;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace NewsCollector.WorkerService
     {
         public static async Task Main(string[] args)
         {
-            using var host = Host.CreateDefaultBuilder(args)              
+            using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
 
@@ -30,7 +31,7 @@ namespace NewsCollector.WorkerService
                       .Build();
 
                     services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("mydb")), optionsLifetime: ServiceLifetime.Transient);
-
+                    services.AddHttpClient();
                     services.AddScoped<IUnitOfWork, UnitOfWork>();
                     services.AddTransient<ISourceService, SourceService>();
                     services.AddTransient<IKeywordService, KeywordService>();
@@ -41,6 +42,20 @@ namespace NewsCollector.WorkerService
                     services.AddScoped<ICollectNewsBySourceHelper, CollectNewsBySourceHelper>();
 
                     services.AddHostedService<TimedWorker>();
+
+                })
+                .ConfigureLogging(log =>
+                {
+                    IConfigurationRoot configuration = new ConfigurationBuilder()
+                      .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                      .AddJsonFile("appsettings.json")
+                      .Build();
+
+                   var logger = new LoggerConfiguration()
+                        .ReadFrom.Configuration(configuration)
+                        .CreateLogger();
+
+                    log.AddSerilog(logger, dispose:true);
 
                 })
                 .UseSystemd()

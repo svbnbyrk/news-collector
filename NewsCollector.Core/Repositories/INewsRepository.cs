@@ -11,5 +11,6 @@ namespace NewsCollector.Core.Repositories
         public Task<IEnumerable<News>> GetNewsBySourceId(int sourceId);
         public Task<IEnumerable<News>> GetNewsBySearchTermintheTitle(string searchTerm);
         public Task<News> GetNewsByUrlWithNewsKeyword(string url);
+        public Task<IEnumerable<News>> GetNewsByKeywordId(int keywordId);
     }
 }

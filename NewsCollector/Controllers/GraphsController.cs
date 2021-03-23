@@ -12,6 +12,7 @@ namespace NewsCollector.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class GraphsController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -23,16 +24,18 @@ namespace NewsCollector.Controllers
             this._dbContext = dbContext;
         }
 
-        [HttpGet("keyword-count")]
+        [HttpGet("news-count-by-keyword")]
         public ActionResult<IEnumerable<GraphDTO>> KeywordCount()
         {
             var topKeywordCounts = _dbContext.NewsKeywords
                 .GroupBy(x => x.Keyword.KeywordValue)
                 .Select(z => new GraphDTO
-                {
+                {   
+                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id,
                     Key = z.Key,
                     Value = z.Count()
-                }).ToList();
+                })
+                .ToList();
 
             if (topKeywordCounts == null)
                 return NotFound();
@@ -40,7 +43,7 @@ namespace NewsCollector.Controllers
             return Ok(topKeywordCounts);
         }
 
-        [HttpPost("keyword-count")]
+        [HttpPost("news-count-by-keyword")]
         public ActionResult<IEnumerable<GraphDTO>> KeywordCount([FromBody] SearchByDateDTO searchByDate)
         {
             DateTime startDate;
@@ -64,9 +67,11 @@ namespace NewsCollector.Controllers
                 .GroupBy(x => x.Keyword.KeywordValue)
                 .Select(z => new GraphDTO
                 {
+                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id,
                     Key = z.Key,
                     Value = z.Count()
-                }).ToList();
+                })
+                .ToList();
 
             if (topKeywordCounts == null)
                 return NotFound();
@@ -82,9 +87,12 @@ namespace NewsCollector.Controllers
                 .GroupBy(x => new { x.SourceId })
                 .Select(c => new GraphDTO
                 {
+                    Id = c.Key.SourceId,
                     Key = _dbContext.Sources.Where(x => x.Id == c.Key.SourceId).Select(x => x.SourceName).FirstOrDefault(),
                     Value = c.Count()
-                }).ToList();
+                })
+                .OrderByDescending(x => x.Value)
+                .ToList();
 
             if (getNewsCountBySource == null)
                 return NotFound();
