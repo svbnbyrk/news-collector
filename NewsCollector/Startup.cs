@@ -39,13 +39,8 @@ namespace NewsCollector
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-                services.AddControllers(options =>
-    {
-        // requires using Microsoft.AspNetCore.Mvc.Formatters;
-        options.OutputFormatters.RemoveType<StringOutputFormatter>();
-        options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
-    });
+            services.AddRazorPages();
+            services.AddControllers();
             services.AddHttpClient();
             services.AddCors();
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
@@ -111,6 +106,7 @@ namespace NewsCollector
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
 
 
