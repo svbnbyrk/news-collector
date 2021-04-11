@@ -40,7 +40,7 @@ namespace NewsCollector.Data.Repositories
         public async Task<IEnumerable<News>> GetNewsByKeywordId(int keywordId)
         {
             return await NewsCollectorDbContext.News
-             .Where(x => x.NewsKeywords.Any(z => z.KeywordId == keywordId)).ToListAsync(); 
+             .Where(x => x.NewsKeywords.Any(z => z.KeywordId == keywordId)).ToListAsync();
         }
 
         private NewsCollectorDbContext NewsCollectorDbContext

@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using NewsCollector.Core.Models;
+using NewsCollector.Domain;
+using NewsCollector.Domain.Queries;
 using NewsCollector.DTO;
 using System;
 using System.Collections.Generic;
@@ -24,6 +26,8 @@ namespace NewsCollector.Mapper
             CreateMap<AddKeywordDTO, Keyword>();
             CreateMap<AddSourceDTO, Source>();
             CreateMap<AddUserDTO, User>();
+
+            CreateMap<PaginationQuery, PaginationFilter>();
         }
     }
 }

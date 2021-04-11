@@ -13,6 +13,12 @@ using NewsCollector.Core.Services;
 using NewsCollector.Data;
 using NewsCollector.DTO;
 using NewsCollector.Helpers;
+using NewsCollector.Domain.Responses;
+using NewsCollector.Domain.Queries;
+using NewsCollector.Domain;
+using NewsCollector.Core.Domain.Queries;
+using NewsCollector.Core.Domain;
+using NewsCollector.Core.Domain.Responses;
 
 namespace NewsCollector.Controllers
 {
@@ -36,47 +42,60 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<IEnumerable<NewsDTO>>> Get(string searchTerm)
+        public async Task<IActionResult> Get([FromQuery] string searchTerm)
         {
+            var link = $"https://news.google.com/rss/search?q=%7B{searchTerm}%7D&hl=tr&gl=TR&ceid=TR:tr";
             var newsList = new List<NewsDTO>();
-            if (!String.IsNullOrEmpty(searchTerm))
+
+            XmlDocument xml = new XmlDocument();
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(link);
+            string result = await client.GetStringAsync("");
+            xml.LoadXml(result);
+            XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
+
+            if (entries.Count == 0)
+                return NotFound();
+
+            foreach (XmlNode entry in entries)
             {
-                var link = $"https://news.google.com/rss/search?q=%7B{searchTerm}%7D&hl=tr&gl=TR&ceid=TR:tr";
-
-                XmlDocument xml = new XmlDocument();
-                var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri(link);
-                string result = await client.GetStringAsync("");
-                xml.LoadXml(result);
-                XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
-
-                if (entries.Count == 0)
-                    return NotFound();
-
-                foreach (XmlNode entry in entries)
+                var random = new Random();
+                var title = entry["title"].InnerText;
+                var index = title.Split("-").Reverse().FirstOrDefault().Length;
+                var cleanString = title.Remove(title.Length - index - 1, index + 1);
+                var news = new NewsDTO
                 {
-                    var title = entry["title"].InnerText;
-                    var index = title.Split("-").Reverse().FirstOrDefault().Length;
-                    var cleanString = title.Remove(title.Length - index - 1, index + 1);
-                    var news = new NewsDTO
-                    {
-                        NewsTitle = cleanString,
-                        NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
-                        NewsUrl = entry["link"].InnerText
-                    };
-                    newsList.Add(news);
-                }
-                return Ok(newsList);
+                    Id = random.Next(1000, 3000),
+                    NewsTitle = cleanString,
+                    NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
+                    NewsUrl = entry["link"].InnerText,
+                    SourceName = entry["source"].InnerText
+                };
+                newsList.Add(news);
             }
-            else
-            {
-                var getallnews = await _newsService.GetAllNews();
-                if (getallnews == null)
-                    return NotFound();
+            return Ok(newsList);
+        }
 
-                var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews.Take(20));
-                return Ok(getallnewsDto);
+        [HttpGet("")]
+        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination)
+        {
+            var paginationFilter = _mapper.Map<PaginationFilter>(pagination);
+            var getallnews = await _newsService.GetAllNews(paginationFilter);
+            var paginationResponse = new PagedResponse<NewsDTO>();
+            if (getallnews == null)
+                return NotFound();
+
+
+            var getallnewsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(getallnews);
+
+            foreach (var item in getallnewsDto)
+            {
+                var source = await _sourceService.GetSourceById(item.SourceId);
+                item.SourceName = source.SourceName;
             }
+
+            return Ok(new PagedResponse<NewsDTO>(getallnewsDto));
+
         }
 
         [Authorize]
