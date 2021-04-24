@@ -22,17 +22,6 @@ namespace NewsCollector.Data.Repositories
                 .SingleOrDefaultAsync(a => a.Id == id );
         }
 
-        //public Task<Keyword> GetTopFiveKeywordCount()
-        //{
-        //    var dem = NewsCollectorDbContext.NewsKeywords
-        //        .GroupBy(x => x.Keyword.KeywordValue)
-        //        .Select(z => new
-        //        {
-        //            name = z.Key,
-        //            count = z.Count()
-        //        });                
-        //}
-
         private NewsCollectorDbContext NewsCollectorDbContext
         {
             get { return Context as NewsCollectorDbContext; }

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsCollector.Data", "NewsC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsCollector.WorkerService", "NewsCollector.WorkerService\NewsCollector.WorkerService.csproj", "{78312DD4-C5BD-4266-975C-671E9F532E69}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewsCollector.Services", "NewsCollector.Services\NewsCollector.Services.csproj", "{3C9A015C-0782-4BC4-8CC9-35473B079568}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsCollector.Services", "NewsCollector.Services\NewsCollector.Services.csproj", "{3C9A015C-0782-4BC4-8CC9-35473B079568}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +39,10 @@ Global
 		{3C9A015C-0782-4BC4-8CC9-35473B079568}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C9A015C-0782-4BC4-8CC9-35473B079568}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C9A015C-0782-4BC4-8CC9-35473B079568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09655784-D14B-432B-B7AB-B44B3B4C638E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09655784-D14B-432B-B7AB-B44B3B4C638E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09655784-D14B-432B-B7AB-B44B3B4C638E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09655784-D14B-432B-B7AB-B44B3B4C638E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

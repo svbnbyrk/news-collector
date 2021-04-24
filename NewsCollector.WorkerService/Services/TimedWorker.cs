@@ -84,6 +84,7 @@ namespace NewsCollector.WorkerService.Services
 
                 await collectNewsBySourceHelper.CollectNewsBySourceAsync();
             }
+            
         }
 
         public virtual async Task StopAsync(CancellationToken cancellationToken)

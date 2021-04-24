@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NewsCollector.Core.Domain;
 using NewsCollector.Core.Models;
 using NewsCollector.Core.Repositories;
 using System;
@@ -35,6 +36,24 @@ namespace NewsCollector.Data.Repositories
                 .Include(x => x.NewsKeywords)
                 .Where(x => x.NewsUrl.Equals(url))
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<News>> GetNewsByKeywordId(int keywordId)
+        {
+            return await NewsCollectorDbContext.News
+             .Where(x => x.NewsKeywords.Any(z => z.KeywordId == keywordId)).ToListAsync();
+        }
+
+        public async Task<IEnumerable<News>> GetAllAsync(PaginationFilter pagination = null)
+        {
+            if (pagination == null)
+            {
+                return await NewsCollectorDbContext.News.Include(x => x.Source).ToListAsync();
+            }
+            var skip = (pagination.PageNumber - 1) * pagination.PageSize;
+
+            return await NewsCollectorDbContext.News.Include(x => x.Source).OrderByDescending(x => x.NewsDate)
+            .Skip(skip).Take(pagination.PageSize).ToListAsync();
         }
 
         private NewsCollectorDbContext NewsCollectorDbContext

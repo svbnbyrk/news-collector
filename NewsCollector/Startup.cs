@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,15 +39,16 @@ namespace NewsCollector
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            services.AddRazorPages();
             services.AddControllers();
             services.AddHttpClient();
+            services.AddCors();
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<ISourceService, SourceService>();
             services.AddTransient<IKeywordService, KeywordService>();
             services.AddTransient<INewsKeywordService, NewsKeywordService>();
-            services.AddTransient<INewsService, NewsService>();
+            services.AddTransient<INewsService, NewsService>();           
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("NewsCollector.Data")));
@@ -79,24 +81,15 @@ namespace NewsCollector
                     }
                 });
             });
-            // services.AddAuthentication(option =>
-            // {
-            //     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //     option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IUriService>(provider =>
+            {
+                var accesor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accesor.HttpContext.Request;
+                var absouleteUrl = string.Concat(request.Scheme, "://", request.Host.ToUriComponent(), request.Path);
 
-            // }).AddJwtBearer(options =>
-            // {
-            //     options.TokenValidationParameters = new TokenValidationParameters
-            //     {
-            //         ValidateIssuer = true,
-            //         ValidateAudience = true,
-            //         ValidateLifetime = false,
-            //         ValidateIssuerSigningKey = true,
-            //         ValidIssuer = Configuration["JwtToken:Issuer"],
-            //         ValidAudience = Configuration["JwtToken:Issuer"],
-            //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtToken:SecretKey"])) //Configuration["JwtToken:SecretKey"]
-            //     };
-            // });
+                return new UriService(absouleteUrl);
+            });
             services.AddAutoMapper(typeof(Startup));
         }
 
@@ -112,17 +105,19 @@ namespace NewsCollector
 
             app.UseRouting();
 
+            app.UseCors(x => x
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
+
             app.UseMiddleware<JwtMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
 
-            app.UseCors(x => x
-             .AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowAnyHeader());
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

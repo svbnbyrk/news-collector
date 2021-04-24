@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NewsCollector.Core.Domain.Responses;
 using NewsCollector.Core.Models;
 using NewsCollector.Core.Services;
 using NewsCollector.DTO;
@@ -15,52 +16,70 @@ namespace NewsCollector.Controllers
     [ApiController]
     public class KeywordController : ControllerBase
     {
-        private readonly IKeywordService _keywordService;
+        private readonly IKeywordService keywordService;
         private readonly IMapper _mapper;
+        private readonly INewsService newsService;
+        private readonly ISourceService sourceService;
 
-        public KeywordController(IKeywordService keywordService, IMapper mapper)
+        public KeywordController(IKeywordService keywordService, IMapper mapper, INewsService newsService,ISourceService sourceService)
         {
             _mapper = mapper;
-            _keywordService = keywordService;
+            this.keywordService = keywordService;
+            this.newsService = newsService;
+            this.sourceService = sourceService;
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<KeywordDTO>> CreateKeyword([FromBody] AddKeywordDTO addKeywordResource)
+        public async Task<IActionResult> CreateKeyword([FromBody] AddKeywordDTO addKeywordResource)
         {
             Keyword keywordModel = _mapper.Map<AddKeywordDTO, Keyword>(addKeywordResource);
-            var newKeyword = await _keywordService.CreateKeyword(keywordModel);
-            var keyword = await _keywordService.GetKeywordById(newKeyword.Id);
+            var newKeyword = await keywordService.CreateKeyword(keywordModel);
+            var keyword = await keywordService.GetKeywordById(newKeyword.Id);
             var artistModel = _mapper.Map<Keyword, KeywordDTO>(keyword);
 
-            return Ok(artistModel);
+            return Ok(new Response<KeywordDTO>(artistModel));
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<KeywordDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var keywords = await _keywordService.GetAllKeywords();
+            var keywords = await keywordService.GetAllKeywords();
             if (keywords == null)
                 return NotFound();
 
             var keywordDTO = _mapper.Map<IEnumerable<Keyword>, IEnumerable<KeywordDTO>>(keywords);
-            return Ok(keywordDTO);
+            return Ok(new Response<IEnumerable<KeywordDTO>>(keywordDTO));
         }
 
-        // [HttpPut]
-        // public async Task<ActionResult<KeywordDTO>> UpdateKeyword(int Id, [FromBody] KeywordDTO updateKeywordResource)
-        // {
-        //     var keywordDTO = _mapper.Map<KeywordDTO, Keyword>(updateKeywordResource);
-        //     if (Id != updateKeywordResource.Id)
-        //         return BadRequest();        
-            
-        //     var keyword = await _keywordService.GetKeywordById(Id);
+        [HttpGet("{id}/News")]
+        public async Task<IActionResult> GetNewsByKeyword(int id)
+        {
+            var news = await newsService.GetNewsByKeywordId(id);
+            if (news == null)
+                return NotFound();
 
-        //     if (keyword == null)
-        //         return NotFound();
+            var newsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(news);
+            return Ok(new Response<IEnumerable<NewsDTO>>(newsDto));
+        }
 
-        //     await _keywordService.UpdateKeyword(keywordDTO,keyword);
 
-        //     return Ok();
-        // }
+        [HttpGet("{id}/news-count-by-source")]
+        public async Task<IActionResult> GetNewsByKeywordWithSource(int id)
+        {
+            var news = await newsService.GetNewsByKeywordId(id);
+            if (news == null)
+                return NotFound();
+
+            var count = news.GroupBy(x => x.SourceId)
+            .Select(c => new GraphDTO
+            {
+                Id = keywordService.GetKeywordById(id).Result.KeywordValue,
+                Key = sourceService.GetSourceById(c.Key).Result.SourceName,
+                Value = c.Count()
+            });
+
+            return Ok(new Response<IEnumerable<GraphDTO>>(count));
+        }
+
     }
 }

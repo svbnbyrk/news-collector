@@ -1,4 +1,5 @@
 ﻿using NewsCollector.Core;
+using NewsCollector.Core.Domain;
 using NewsCollector.Core.Models;
 using NewsCollector.Core.Services;
 using System;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NewsCollector.Services
 {
-    public class NewsService: INewsService
+    public class NewsService : INewsService
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -30,9 +31,9 @@ namespace NewsCollector.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<IEnumerable<News>> GetAllNews()
+        public async Task<IEnumerable<News>> GetAllNews(PaginationFilter pagination = null)
         {
-            return await _unitOfWork.News.GetAllAsync();
+            return await _unitOfWork.News.GetAllAsync(pagination);
         }
 
         public async Task<News> GetNewsById(int id)
@@ -58,6 +59,11 @@ namespace NewsCollector.Services
             updatedNews.SourceId = news.SourceId;
 
             await _unitOfWork.CommitAsync();
+        }
+
+        public async Task<IEnumerable<News>> GetNewsByKeywordId(int keywordId)
+        {
+            return await _unitOfWork.News.GetNewsByKeywordId(keywordId);
         }
     }
 }
