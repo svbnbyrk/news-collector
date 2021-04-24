@@ -48,7 +48,7 @@ namespace NewsCollector
             services.AddTransient<ISourceService, SourceService>();
             services.AddTransient<IKeywordService, KeywordService>();
             services.AddTransient<INewsKeywordService, NewsKeywordService>();
-            services.AddTransient<INewsService, NewsService>();
+            services.AddTransient<INewsService, NewsService>();           
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddDbContext<NewsCollectorDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("NewsCollector.Data")));
@@ -81,6 +81,15 @@ namespace NewsCollector
                     }
                 });
             });
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IUriService>(provider =>
+            {
+                var accesor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accesor.HttpContext.Request;
+                var absouleteUrl = string.Concat(request.Scheme, "://", request.Host.ToUriComponent(), request.Path);
+
+                return new UriService(absouleteUrl);
+            });
             services.AddAutoMapper(typeof(Startup));
         }
 
@@ -96,6 +105,11 @@ namespace NewsCollector
 
             app.UseRouting();
             
+            app.UseCors(x => x
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
+
             app.UseCors(x => x
              .AllowAnyOrigin()
              .AllowAnyMethod()

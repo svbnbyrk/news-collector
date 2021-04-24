@@ -9,8 +9,8 @@ namespace NewsCollector.Core.Domain.Queries
         }
         public PaginationQuery(int pageNumber, int pageSize)
         {
-            pageNumber = this.PageNumber;
-            pageSize = this.PageSize;
+            this.PageNumber= pageNumber; 
+            this.PageSize = pageSize; 
         }
 
         public int PageNumber { get; set; }

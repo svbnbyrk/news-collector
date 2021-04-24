@@ -37,7 +37,7 @@ namespace NewsCollector.Services
             {
                 return await _unitOfWork.News.GetAllAsync();
             }
-            
+            return await _unitOfWork.News.GetAllAsync(pagination);
         }
 
         public async Task<News> GetNewsById(int id)

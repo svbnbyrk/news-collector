@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NewsCollector.Core.Domain.Responses;
 using NewsCollector.Core.Models;
 using NewsCollector.Data;
 using NewsCollector.DTO;
@@ -26,13 +28,13 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("news-count-by-keyword")]
-        public ActionResult<IEnumerable<GraphDTO>> KeywordCount()
+        public IActionResult KeywordCount()
         {
             var topKeywordCounts = _dbContext.NewsKeywords
                 .GroupBy(x => x.Keyword.KeywordValue)
                 .Select(z => new GraphDTO
                 {
-                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id,
+                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id.ToString(),
                     Key = z.Key,
                     Value = z.Count()
                 })
@@ -41,11 +43,11 @@ namespace NewsCollector.Controllers
             if (topKeywordCounts?.Count == 0)
                 return NotFound();
 
-            return Ok(topKeywordCounts);
+            return Ok(new Response<IEnumerable<GraphDTO>>(topKeywordCounts));
         }
 
         [HttpPost("news-count-by-keyword")]
-        public ActionResult<IEnumerable<GraphDTO>> KeywordCount([FromBody] SearchByDateDTO searchByDate)
+        public IActionResult KeywordCount([FromQuery] SearchByDateDTO searchByDate)
         {
             DateTime startDate;
             DateTime endDate;
@@ -68,7 +70,7 @@ namespace NewsCollector.Controllers
                 .GroupBy(x => x.Keyword.KeywordValue)
                 .Select(z => new GraphDTO
                 {
-                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id,
+                    Id = _dbContext.Keywords.FirstOrDefault(x => x.KeywordValue.Contains(z.Key)).Id.ToString(),
                     Key = z.Key,
                     Value = z.Count()
                 })
@@ -77,19 +79,25 @@ namespace NewsCollector.Controllers
             if (topKeywordCounts?.Count == 0)
                 return NotFound();
 
-            return Ok(topKeywordCounts);
+            return Ok(new Response<IEnumerable<GraphDTO>>(topKeywordCounts));
         }
 
 
         [HttpGet("news-count-by-source")]
-        public ActionResult<IEnumerable<GraphDTO>> NewsCountBySource()
+        public IActionResult NewsCountBySource()
         {
             var getNewsCountBySource = _dbContext.News
-                .GroupBy(x => new { x.SourceId })
+                .Where(x => x.NewsKeywords.FirstOrDefault() != null)
+                .Select(z => new {
+                    z.Id,
+                    z.SourceId,
+                    z.Source.SourceName
+                })
+                .GroupBy(y => y.SourceId)
                 .Select(c => new GraphDTO
                 {
-                    Id = c.Key.SourceId,
-                    Key = _dbContext.Sources.Where(x => x.Id == c.Key.SourceId).Select(x => x.SourceName).FirstOrDefault(),
+                    Id = c.Key.ToString(),
+                    Key = c.First().SourceName.ToString(),
                     Value = c.Count()
                 })
                 .OrderByDescending(x => x.Value)
@@ -99,24 +107,69 @@ namespace NewsCollector.Controllers
             if (getNewsCountBySource?.Count == 0)
                 return NotFound();
 
-            return Ok(getNewsCountBySource);
+            var rand = new Random();
+            var randomList = getNewsCountBySource.OrderBy(x => rand.Next()).ToList();
+
+            return Ok(new Response<IEnumerable<GraphDTO>>(randomList));
         }
 
         [HttpGet("news-count")]
-        public ActionResult<IEnumerable<CountDTO>> NewsCount()
+        public ActionResult<IEnumerable<CountDTO>> NewsCount([FromQuery] SearchByDateDTO searchByDate)
         {
-            var newsCount = _dbContext.News
-            .Count();
+            var query = _dbContext.News.Where(x => x.NewsKeywords.Count > 0).AsQueryable();
+            if (searchByDate.EndingDate != null && searchByDate.StartingDate != null)
+            {
+                DateTime startDate;
+                DateTime endDate;
 
+                if (!DateTime.TryParse(searchByDate.StartingDate, out startDate))
+                {
+                    return BadRequest("StartingDate tarih formatında değil");
+                }
+                else if (!DateTime.TryParse(searchByDate.EndingDate, out endDate))
+                {
+                    return BadRequest("EndingDate tarih formatında değil");
+                }
+
+                if (startDate >= endDate)
+                {
+                    return BadRequest("StartingDate, EndingDate tarihinden ileri bir tarih olamaz");
+                }
+
+                query = query.Where(c => c.NewsDate >= startDate && c.NewsDate < endDate);
+            }
+
+
+            var newsCount = query.Count();
             if (newsCount == 0)
                 return NotFound();
 
-            return Ok(newsCount);
+            return Ok(new Response<int>(newsCount));
         }
 
         [HttpGet("source-count")]
-        public ActionResult<IEnumerable<CountDTO>> SourceCount()
+        public ActionResult<IEnumerable<CountDTO>> SourceCount([FromQuery] SearchByDateDTO searchByDate)
         {
+            if (searchByDate.EndingDate != null && searchByDate.StartingDate != null)
+            {
+                DateTime startDate;
+                DateTime endDate;
+
+                if (!DateTime.TryParse(searchByDate.StartingDate, out startDate))
+                {
+                    return BadRequest("StartingDate tarih formatında değil");
+                }
+                else if (!DateTime.TryParse(searchByDate.EndingDate, out endDate))
+                {
+                    return BadRequest("EndingDate tarih formatında değil");
+                }
+
+                if (startDate >= endDate)
+                {
+                    return BadRequest("StartingDate, EndingDate tarihinden ileri bir tarih olamaz");
+                }
+            }
+
             var sourceCount = _dbContext.Sources
             .Count();
 
@@ -147,7 +200,7 @@ namespace NewsCollector.Controllers
                 var dem = query.GroupBy(x => new { x.SourceId })
                 .Select(c => new GraphDTO
                 {
-                    Id = sourceId,
+                    Id = sourceId.ToString(),
                     Key = now.AddDays(-i).ToShortDateString(),
                     Value = c.Count()
                 }).ToList();
@@ -178,7 +231,7 @@ namespace NewsCollector.Controllers
                 var dem = query.GroupBy(x => new { x.Keyword.KeywordValue })
                 .Select(c => new GraphDTO
                 {
-                    Id = keywordId,
+                    Id = keywordId.ToString(),
                     Key = now.AddDays(-i).ToShortDateString(),
                     Value = c.Count()
                 }).ToList();

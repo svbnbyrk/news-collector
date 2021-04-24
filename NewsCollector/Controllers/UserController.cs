@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NewsCollector.Helpers;
 using AutoMapper;
+using NewsCollector.Core.Domain.Responses;
 
 namespace NewsCollector.Controllers
 {
@@ -44,7 +45,7 @@ namespace NewsCollector.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<AddUserDTO>> CreateUser([FromBody] AddUserDTO addUserResources)
+        public async Task<IActionResult> CreateUser([FromBody] AddUserDTO addUserResources)
         {
             User userModel = mapper.Map<AddUserDTO, User>(addUserResources);
             var newUser = await _userService.CreateUser(userModel);
@@ -52,11 +53,11 @@ namespace NewsCollector.Controllers
                 return NotFound();
             var user = await _userService.GetUserById(newUser.Id);
             var userModelDTO = mapper.Map<User, AddUserDTO>(user);
-            return Ok(userModelDTO);
+            return Ok(new Response<AddUserDTO>(userModelDTO));
         }
 
         [HttpDelete]
-        public async Task<ActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _userService.GetUserById(id);
             if(user == null)

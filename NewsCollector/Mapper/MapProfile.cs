@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using NewsCollector.Core.Domain;
+using NewsCollector.Core.Domain.Queries;
 using NewsCollector.Core.Models;
 using NewsCollector.Domain;
 using NewsCollector.Domain.Queries;

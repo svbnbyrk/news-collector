@@ -1,4 +1,5 @@
-﻿using NewsCollector.Core.Models;
+﻿using NewsCollector.Core.Domain;
+using NewsCollector.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,7 @@ namespace NewsCollector.Core.Repositories
 {
     public interface INewsRepository:IRepository<News>
     {
+        public Task<IEnumerable<News>> GetAllAsync(PaginationFilter pagination = null);
         public Task<IEnumerable<News>> GetNewsBySourceId(int sourceId);
         public Task<IEnumerable<News>> GetNewsBySearchTermintheTitle(string searchTerm);
         public Task<News> GetNewsByUrlWithNewsKeyword(string url);
