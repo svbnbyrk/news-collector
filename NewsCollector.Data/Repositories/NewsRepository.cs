@@ -44,6 +44,7 @@ namespace NewsCollector.Data.Repositories
              .Where(x => x.NewsKeywords.Any(z => z.KeywordId == keywordId)).ToListAsync();
         }
 
+<<<<<<< HEAD
         public async Task<IEnumerable<News>> GetAllAsync(PaginationFilter pagination = null)
         {
             if (pagination == null)
@@ -56,6 +57,8 @@ namespace NewsCollector.Data.Repositories
             .Skip(skip).Take(pagination.PageSize).ToListAsync();
         }
 
+=======
+>>>>>>> origin/development
         private NewsCollectorDbContext NewsCollectorDbContext
         {
             get { return Context as NewsCollectorDbContext; }

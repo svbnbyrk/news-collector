@@ -81,6 +81,7 @@ namespace NewsCollector
                     }
                 });
             });
+<<<<<<< HEAD
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IUriService>(provider =>
             {
@@ -90,6 +91,8 @@ namespace NewsCollector
 
                 return new UriService(absouleteUrl);
             });
+=======
+>>>>>>> origin/development
             services.AddAutoMapper(typeof(Startup));
         }
 
@@ -104,6 +107,11 @@ namespace NewsCollector
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            
+            app.UseCors(x => x
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
 
             app.UseCors(x => x
              .AllowAnyOrigin()
