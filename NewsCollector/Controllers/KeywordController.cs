@@ -19,7 +19,6 @@ namespace NewsCollector.Controllers
         private readonly IKeywordService keywordService;
         private readonly IMapper _mapper;
         private readonly INewsService newsService;
-<<<<<<< HEAD
         private readonly ISourceService sourceService;
 
         public KeywordController(IKeywordService keywordService, IMapper mapper, INewsService newsService,ISourceService sourceService)
@@ -28,14 +27,6 @@ namespace NewsCollector.Controllers
             this.keywordService = keywordService;
             this.newsService = newsService;
             this.sourceService = sourceService;
-=======
-
-        public KeywordController(IKeywordService keywordService, IMapper mapper, INewsService newsService)
-        {
-            _mapper = mapper;
-            _keywordService = keywordService;
-            this.newsService = newsService;
->>>>>>> origin/development
         }
 
         [HttpPost("")]
@@ -61,32 +52,11 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("{id}/News")]
-<<<<<<< HEAD
         public async Task<IActionResult> GetNewsByKeyword(int id)
         {
             var news = await newsService.GetNewsByKeywordId(id);
             if (news == null)
                 return NotFound();
-=======
-        public async Task<ActionResult<IEnumerable<NewsDTO>>> GetNewsByKeyword(int id)
-        {
-            var news = await newsService.GetNewsByKeywordId(id);
-            if(news == null)
-                return NotFound();
-
-            var newsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(news);
-            return Ok(newsDto);           
-        }
-
-        // [HttpPut]
-        // public async Task<ActionResult<KeywordDTO>> UpdateKeyword(int Id, [FromBody] KeywordDTO updateKeywordResource)
-        // {
-        //     var keywordDTO = _mapper.Map<KeywordDTO, Keyword>(updateKeywordResource);
-        //     if (Id != updateKeywordResource.Id)
-        //         return BadRequest();        
-            
-        //     var keyword = await _keywordService.GetKeywordById(Id);
->>>>>>> origin/development
 
             var newsDto = _mapper.Map<IEnumerable<News>, IEnumerable<NewsDTO>>(news);
             return Ok(new Response<IEnumerable<NewsDTO>>(newsDto));
@@ -105,7 +75,7 @@ namespace NewsCollector.Controllers
             {
                 Id = keywordService.GetKeywordById(id).Result.KeywordValue,
                 Key = sourceService.GetSourceById(c.Key).Result.SourceName,
-                Value = c.Count()
+                Value = c.Count().ToString()
             });
 
             return Ok(new Response<IEnumerable<GraphDTO>>(count));

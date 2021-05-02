@@ -18,8 +18,6 @@ namespace NewsCollector.Data.Configurations
                 .Property(m => m.Id)
                 .UseIdentityColumn();
            
-            builder.HasIndex(x => x.SourceId);
-
             builder.HasOne(x => x.Source)
                 .WithMany(y => y.News)
                 .HasForeignKey(z => z.SourceId)

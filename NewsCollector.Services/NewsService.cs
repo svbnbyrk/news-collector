@@ -33,15 +33,7 @@ namespace NewsCollector.Services
 
         public async Task<IEnumerable<News>> GetAllNews(PaginationFilter pagination = null)
         {
-<<<<<<< HEAD
             return await _unitOfWork.News.GetAllAsync(pagination);
-=======
-            if(pagination == null)
-            {
-                return await _unitOfWork.News.GetAllAsync();
-            }
-            
->>>>>>> origin/development
         }
 
         public async Task<News> GetNewsById(int id)
