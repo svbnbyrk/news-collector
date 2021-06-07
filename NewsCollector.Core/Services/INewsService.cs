@@ -9,7 +9,7 @@ namespace NewsCollector.Core.Services
 {
     public interface INewsService
     {
-        Task<IEnumerable<News>> GetAllNews(PaginationFilter pagination);
+        Task<IEnumerable<News>> GetAllNews(PaginationFilter pagination, string searchParam, DateTime startDate, DateTime endDate, string excludedParam);
         Task<News> GetNewsById(int id);
         Task<News> GetNewsByUrlWithNewsKeyword(string url);
         Task<News> CreateNews(News news);

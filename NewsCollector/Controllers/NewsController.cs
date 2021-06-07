@@ -41,7 +41,43 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination, [FromQuery] string searchTerm, [FromQuery] SearchByDateDTO searchByDate )
+        public async Task<IActionResult> GetFromRss([FromQuery] PaginationQuery pagination, [FromQuery] string searchTerm, [FromQuery] SearchByDateDTO searchByDate)
+        {
+            var link = $"https://news.google.com/rss/search?q={searchTerm}&hl=tr&gl=TR&ceid=TR:tr";
+            var newsList = new List<NewsDTO>();
+
+            XmlDocument xml = new XmlDocument();
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(link);
+            string result = await client.GetStringAsync("");
+            xml.LoadXml(result);
+            XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
+
+            if (entries.Count == 0)
+                return NotFound();
+
+            foreach (XmlNode entry in entries)
+            {
+                var random = new Random();
+                var title = entry["title"].InnerText;
+                var index = title.Split("-").Reverse().FirstOrDefault().Length;
+                var cleanString = title.Remove(title.Length - index - 1, index + 1);
+                var news = new NewsDTO
+                {
+                    Id = random.Next(1000, 3000),
+                    NewsTitle = cleanString,
+                    NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
+                    NewsUrl = entry["link"].InnerText,
+                    SourceName = entry["source"].InnerText
+                };
+                newsList.Add(news);
+            }
+
+            return Ok(new Response<IEnumerable<NewsDTO>>(newsList.OrderByDescending(x => x.NewsDate)));
+        }
+
+        [HttpGet("")]
+        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination, [FromQuery] string searchTerm, [FromQuery] SearchByDateDTO searchByDate)
         {
             if (searchByDate.EndingDate != null && searchByDate.StartingDate != null)
             {
@@ -61,41 +97,6 @@ namespace NewsCollector.Controllers
                 {
                     return BadRequest("StartingDate, EndingDate tarihinden ileri bir tarih olamaz");
                 }
-            }
-
-            if (!String.IsNullOrEmpty(searchTerm))
-            {
-                var link = $"https://news.google.com/rss/search?q=%7B{searchTerm}%7D&hl=tr&gl=TR&ceid=TR:tr";
-                var newsList = new List<NewsDTO>();
-
-                XmlDocument xml = new XmlDocument();
-                var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri(link);
-                string result = await client.GetStringAsync("");
-                xml.LoadXml(result);
-                XmlNodeList entries = xml.DocumentElement.GetElementsByTagName("item");
-
-                if (entries.Count == 0)
-                    return NotFound();
-
-                foreach (XmlNode entry in entries)
-                {
-                    var random = new Random();
-                    var title = entry["title"].InnerText;
-                    var index = title.Split("-").Reverse().FirstOrDefault().Length;
-                    var cleanString = title.Remove(title.Length - index - 1, index + 1);
-                    var news = new NewsDTO
-                    {
-                        Id = random.Next(1000, 3000),
-                        NewsTitle = cleanString,
-                        NewsDate = DateTime.Parse(entry["pubDate"].InnerText),
-                        NewsUrl = entry["link"].InnerText,
-                        SourceName = entry["source"].InnerText
-                    };
-                    newsList.Add(news);
-                }
-             
-                return Ok(new Response<IEnumerable<NewsDTO>>(newsList.OrderByDescending(x => x.NewsDate)));
             }
 
             var paginationFilter = _mapper.Map<PaginationFilter>(pagination);
