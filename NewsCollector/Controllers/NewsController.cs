@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NewsCollector.Core.Domain;
@@ -40,7 +39,7 @@ namespace NewsCollector.Controllers
             _uriService = uriService;
         }
 
-        [HttpGet("")]
+        [HttpGet("from-rss")]
         public async Task<IActionResult> GetFromRss([FromQuery] PaginationQuery pagination, [FromQuery] string searchTerm, [FromQuery] SearchByDateDTO searchByDate)
         {
             var link = $"https://news.google.com/rss/search?q={searchTerm}&hl=tr&gl=TR&ceid=TR:tr";
@@ -77,7 +76,7 @@ namespace NewsCollector.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination, [FromQuery] string searchTerm, [FromQuery] SearchByDateDTO searchByDate)
+        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination,[FromQuery] SearchByDateDTO searchByDate)
         {
             if (searchByDate.EndingDate != null && searchByDate.StartingDate != null)
             {
