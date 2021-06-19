@@ -65,5 +65,11 @@ namespace NewsCollector.Services
         {
             return await _unitOfWork.News.GetNewsByKeywordId(keywordId);
         }
+
+        //to do 
+        public Task<IEnumerable<News>> GetNews(PaginationFilter pagination, string searchParam, DateTime startDate, DateTime endDate, string excludedParam)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
